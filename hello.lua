@@ -190,3 +190,211 @@ print(numOfStr, type(numOfStr))
 for j = 1, numOfStr-1 do
   print(string.format("%d: %s", j, splitStrTable[j]))
 end
+
+
+--- vararg
+--[[
+  varargs
+]]
+function getSumMore(...)
+  local sum = 0
+  for k, v in pairs{...} do
+    sum = sum + v
+  end
+  return sum
+end
+
+io.write('Sum ', getSumMore(1,2,3,4,5,6), '\n')
+
+
+-- inline function
+doubleIt = function(x) return x * 2 end
+
+io.write('Double of 3 is: ', doubleIt(3), '\n')
+
+function outerFunc()
+  local i = 0
+  return function()
+    i = i + 1
+    return i
+  end
+end
+
+getI = outerFunc()
+print('closure function 1st call is ', getI())
+print('closure function 2end call is ', getI())
+
+co = coroutine.create(function ()
+        for i=1,10,1 do
+          print("co", i)
+          if i == 5 then
+            coroutine.yield()
+          end
+        end
+      end)
+
+co1 = coroutine.create(function()
+    for i=1001, 1010, 1 do
+      print('co1 ', i)
+    end end
+  )
+
+print('co status is ', coroutine.status(co))
+coroutine.resume(co)
+print('co status is ',coroutine.status(co))
+
+coroutine.resume(co1)
+print('co1 status is ',coroutine.status(co1))
+
+coroutine.resume(co)
+print('co status is ',coroutine.status(co))
+
+
+co2 = coroutine.create(function (a,b,c)
+          print("co2", a,b,c)
+        end)
+coroutine.resume(co2, 1, 2, 3)
+
+co3 = coroutine.create(function (a,b)
+    coroutine.yield(a + b, a - b)
+        end)
+print(coroutine.resume(co3, 20, 10))
+
+co4 = coroutine.create (function ()
+       print("co4", coroutine.yield())
+     end)
+
+print('co4 status is ',coroutine.status(co4))
+coroutine.resume(co4)
+print('co4 status is ',coroutine.status(co4))
+coroutine.resume(co4)
+print('co4 status is ',coroutine.status(co4))
+
+-- coroutine.resume(co4, 4, 5)
+
+--[[
+different ways to work with files
+r: Read only(default)
+w: Overwrite or create a new file
+a: Append or create a new file
+r+: Read & write existing file
+w+: Overwrite read or create a new file
+a+: Append read or create file
+]]
+
+file = io.open('test.txt', 'w+')
+file:write('Random string of text\n')
+file:write('Some more text\n')
+file:seek('set', 0)
+print(file:read('*a'))
+file:close()
+
+
+file = io.open('test.txt', 'a+')
+file:write('Even more text\n')
+file:seek('set', 0)
+print(file:read('*a')) -- all the data
+file:close()
+
+--[[
+Modules
+
+-- convert.lua
+local convert = {}
+
+function convert.ftToCm(feet)
+  return feet + 30.48
+end
+
+return convert
+
+]]
+
+convertModule = require('convert')
+print(string.format('%.3f cm', convertModule.ftToCm(12)))
+
+--[[
+meta table
+
+]]
+aTable = {}
+for i=1, 10 do
+  aTable[i] = i
+end
+
+mt = {
+  __add = function(table1, table2)
+    sumTable = {}
+    for j = 1, #table1 do
+      if table1[j] ~= nil and table2[j] ~= nil then
+        sumTable[j] = table1[j] + table2[j]
+      else
+        sumTable[j] = 0
+      end
+
+    end
+
+    return sumTable
+ end,
+
+ __eq = function(table1, table2)
+   return table1.value == table2.value
+ end,
+
+}
+
+setmetatable(aTable, mt) -- setmetatable to link the table and meta definition
+
+print(aTable == aTable)
+
+addTable = {}
+
+addTable = aTable + aTable
+for i=1, #addTable do
+  print(addTable[i])
+end
+
+print(getmetatable(aTable))
+
+--[[
+class
+]]
+
+Animal = {height=0, weight=0, name='no name', age=0}
+function Animal:new(height, weight, name, age)
+  setmetatable({}, Animal)
+  print("initialize Animal new")
+  self.height = height
+  self.weight = weight
+  self.name = name
+  self.age = age
+  return self
+end
+
+function Animal:toString()
+  str = string.format('height: %d, weight:%d pounds, name: %s, age: %d', self.height, self.weight, self.name, self.age)
+  return str
+end
+
+animal = Animal:new(30, 20, 'Ant', 3)
+print(animal:toString())
+
+Cat = Animal:new()
+
+function Cat:new (height, weight, name, age, favFood)
+  setmetatable({}, Cat)
+  print("initialize cat new")
+  self.height = height
+  self.weight = weight
+  self.name = name
+  self.age = age
+  self.favFood = favFood
+  return self
+end
+function Cat:toString()
+  str = string.format('height: %d, weight:%d pounds, name: %s, age: %d, favFood: %s', self.height, self.weight, self.name, self.age, self.favFood)
+  return str
+end
+
+cat = Cat:new(30, 20, 'Tommy', 3, 'Chrisp')
+print(cat:toString())
